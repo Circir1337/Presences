@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/consistent-destructuring */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import axios from "axios";
 import chalk from "chalk";
@@ -51,7 +52,8 @@ const spinnerSettings = {
 			);
 		}
 
-		readdirSync(src).forEach(letter => {
+		for (const letter of readdirSync(src)) {
+			// eslint-disable-next-line unicorn/no-array-for-each
 			readdirSync(`${src}/${letter}/`).forEach(async presence => {
 				const data = JSON.parse(
 					readFileSync(
@@ -62,7 +64,7 @@ const spinnerSettings = {
 				data.path = `${src}/${letter}/${presence}/dist/metadata.json`;
 				filesMap.set(presence, data);
 			});
-		});
+		}
 
 		success(`Loading complete. ${filesMap.size} presences loaded.`);
 		info(`Clearing presences with language: ${language}.`);
@@ -213,9 +215,9 @@ const spinnerSettings = {
 							multiple: true,
 							choices: (Array.from(filesMap) as Files).map(f => f[0]),
 							footer() {
-								const selectedPresences = this.selected.length;
+								
 								return chalk.gray(
-									`(Scroll up and down to reveal more choices)\n(You selected ${selectedPresences} presences)`
+									`(Scroll up and down to reveal more choices)\n(You selected ${this.selected.length} presences)`
 								);
 							},
 						},
@@ -236,10 +238,10 @@ const spinnerSettings = {
 		for await (const file of files) {
 			counter--;
 			const data = file[1],
-				{ path } = data,
-				check = JSON.parse(await readFileSync(data.path).toString());
+				{ path } = data
+				;
 
-			if (check.description[language]) {
+			if (JSON.parse(await readFileSync(data.path).toString()).description[language]) {
 				error(`${file[0]} has already been translated to ${language}.`);
 				continue;
 			}

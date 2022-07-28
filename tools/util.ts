@@ -2,7 +2,7 @@ import { exec, type ExecOptions } from "node:child_process";
 import { promisify } from "node:util";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const execute = promisify(exec);
+
 /**
  * Executes a shell command and returns it as a Promise.
  * @param {string[]} cmd The command to execute
@@ -12,7 +12,7 @@ export async function execShellCommand(
 	cmd: string,
 	options?: ExecOptions
 ): Promise<string> {
-	const response = await execute(cmd, { ...options });
+	const response = await promisify(exec)(cmd, { ...options });
 	if (response.stderr) throw response.stderr;
 	return response.stdout;
 }
@@ -42,13 +42,14 @@ function validateArg(arg: string): ValidEventName {
 export async function getChangedFolders() {
 	const commands: Record<ValidEventName, string> = {
 			push: "HEAD HEAD^",
+			// eslint-disable-next-line camelcase
 			pull_request: `HEAD origin/${process.argv[3] ?? "main"}`,
 			uncommitted: "HEAD --",
 		},
-		eventName = validateArg(process.argv[2]) ?? "pull_request",
+		
 		changedPresenceFolders = (
 			await execShellCommand(
-				`git --no-pager diff --name-only ${commands[eventName]}`
+				`git --no-pager diff --name-only ${commands[validateArg(process.argv[2]) ?? "pull_request"]}`
 			)
 		)
 			.split("\n")

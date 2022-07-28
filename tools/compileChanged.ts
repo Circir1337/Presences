@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+/* eslint-disable no-unsafe-finally */
 import "source-map-support/register";
 
 import { green, red } from "chalk";
@@ -9,8 +11,8 @@ async function main() {
 	if (!changedFolders.length) return;
 
 	await compileFile(0);
-	const presenceErrors = Object.keys(errors).length;
-	if (presenceErrors) console.log(errors.join("\n"));
+
+	if (Object.keys(errors).length) console.log(errors.join("\n"));
 	else console.log(green("✔ All presences compiled successfully!"));
 
 	async function compileFile(i: number): Promise<void> {
@@ -26,32 +28,30 @@ async function main() {
 				.replaceAll("\r", "")
 				.trim() as string;
 
-			error
-				.split("\n")
-				.filter(Boolean)
-				.forEach(e => {
-					const regexResult = e.match(/\w+\.\w+\((\d+),\d+\): (.+)/);
+			for (const e of error.split("\n").filter(Boolean)) {
+				const regexResult = e.match(/\w+\.\w+\((\d+),\d+\): (.+)/);
 
-					if (regexResult)
-						errors.push(
-							createAnnotation({
-								type: "error",
-								file: changedFolders[i] + "/presence.ts",
-								title: "Failed to compile",
-								line: regexResult[1],
-								message: regexResult[2],
-							})
-						);
-					else
-						errors.push(
-							createAnnotation({
-								type: "error",
-								file: changedFolders[i] + "/presence.ts",
-								title: "Failed to compile",
-								message: e,
-							})
-						);
-				});
+				if (regexResult) {
+					errors.push(
+						createAnnotation({
+							type: "error",
+							file: `${changedFolders[i]}/presence.ts`,
+							title: "Failed to compile",
+							line: regexResult[1],
+							message: regexResult[2],
+						})
+					);
+				} else {
+					errors.push(
+						createAnnotation({
+							type: "error",
+							file: `${changedFolders[i]}/presence.ts`,
+							title: "Failed to compile",
+							message: e,
+						})
+					);
+				}
+			}
 
 			console.error(
 				red(`✘ Error on ${changedFolders[i].split("/").at(-1)}:\n`),

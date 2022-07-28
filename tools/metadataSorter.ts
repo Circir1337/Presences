@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import "source-map-support/register";
 
 import { existsSync as exists } from "node:fs";
@@ -32,12 +33,13 @@ const missingMetadata: string[] = glob("./{websites,programs}/*/*/").filter(
 		return `https://schemas.premid.app/metadata/${latestVersion}` as const;
 	};
 
-if (missingMetadata?.length > 0)
+if (missingMetadata?.length > 0) {
 	console.log(
 		`\nThe following presence${
 			missingMetadata.length > 1 ? "s don't" : " doesn't"
 		} include a metadata file :\n${missingMetadata.join(", ")}\n`
 	);
+}
 
 (async function () {
 	const latestSchema = await latestMetadataSchema();
@@ -63,9 +65,10 @@ if (missingMetadata?.length > 0)
 			settings: file.settings,
 		};
 
-		for (const key in newData)
+		for (const key in newData) {
 			if (typeof newData[key as keyof Metadata] === "undefined")
 				delete newData[key as keyof Metadata];
+		}
 
 		writeJson(newData, path);
 	}
