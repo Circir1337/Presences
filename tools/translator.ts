@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/consistent-destructuring */
 import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import axios from "axios";
 import chalk from "chalk";
@@ -53,7 +52,6 @@ const spinnerSettings = {
 		}
 
 		for (const letter of readdirSync(src)) {
-			// eslint-disable-next-line unicorn/no-array-for-each
 			readdirSync(`${src}/${letter}/`).forEach(async presence => {
 				const data = JSON.parse(
 					readFileSync(

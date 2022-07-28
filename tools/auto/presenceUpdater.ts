@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import "source-map-support/register";
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -22,9 +23,9 @@ import {
 } from "typescript";
 import { readFile, readJson, isValidJSON, type Metadata } from "../util";
 
-const url = process.env.MONGO_URL,
+const 
 	dbName = "PreMiD",
-	client = new MongoClient(url, { appName: "PreMiD-PresenceUpdater" });
+	client = new MongoClient(process.env.MONGO_URL, { appName: "PreMiD-PresenceUpdater" });
 
 let exitCode = 0,
 	appCode = 0;
@@ -44,12 +45,12 @@ const writeJS = (path: string, code: string): void =>
 		for (const diagnostic of allDiagnostics) {
 			if (diagnostic.file) {
 				const { line, character } =
-						diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!),
-					message = flattenDiagnosticMessageText(diagnostic.messageText, "\n");
+						diagnostic.file.getLineAndCharacterOfPosition(diagnostic.start!)
+					;
 				console.log(
 					`${diagnostic.file.fileName} (${line + 1},${
 						character + 1
-					}): ${message}`
+					}): ${flattenDiagnosticMessageText(diagnostic.messageText, "\n")}`
 				);
 			} else
 				console.log(flattenDiagnosticMessageText(diagnostic.messageText, "\n"));
@@ -83,12 +84,7 @@ const writeJS = (path: string, code: string): void =>
 		}
 	},
 	compile = async (filesToCompile: string[]): Promise<void> => {
-		const premidTypings = join(
-				__dirname,
-				"../../../@types",
-				"premid",
-				"index.d.ts"
-			),
+		const 
 			{ compilerOptions: baseTsConfig } = readJson<{
 				compilerOptions: CompilerOptions;
 			}>(resolve(__dirname, "../../../tsconfig.json"));
@@ -108,7 +104,12 @@ const writeJS = (path: string, code: string): void =>
 					types: ["node"],
 				};
 
-			compileFile([fileToCompile, premidTypings], tsConfig);
+			compileFile([fileToCompile, join(
+				__dirname,
+				"../../../@types",
+				"premid",
+				"index.d.ts"
+			)], tsConfig);
 		}
 	},
 	main = async (): Promise<void> => {
@@ -182,7 +183,7 @@ const writeJS = (path: string, code: string): void =>
 		const compiledPresences = (
 			await Promise.all(
 				dbDiff.map(async ([metadata, path]) => {
-					const sources = glob(`${path}*.ts`);
+					
 
 					appCode = 0;
 
@@ -197,22 +198,22 @@ const writeJS = (path: string, code: string): void =>
 					if (!path) return null;
 
 					if (!valid(metadata.version)) {
-						const meta = metadata.service;
+						
 						console.error(
-							`Error. ${meta} does not include a valid metadata file/version, skipping...`
+							`Error. ${metadata.service} does not include a valid metadata file/version, skipping...`
 						);
 						appCode = 1;
 						return null;
 					}
 
-					await compile(sources);
+					await compile(glob(`${path}*.ts`));
 
 					const jsFiles = glob(`${path}dist/*.js`);
 					for (const file of jsFiles) await polyfill(file);
 
 					if (!existsSync(`${path}dist/presence.js`)) {
-						const meta = metadata.service ?? path;
-						console.error(`Error. ${meta} did not compile, skipping...`);
+						
+						console.error(`Error. ${metadata.service ?? path} did not compile, skipping...`);
 						appCode = 1;
 						return null;
 					}
@@ -224,9 +225,9 @@ const writeJS = (path: string, code: string): void =>
 						)}/`,
 						metadata,
 						presenceJs: readFileSync(`${path}dist/presence.js`, "utf-8"),
-					};
+					},
 
-					const existsIFrame = existsSync(`${path}dist/iframe.js`);
+					 existsIFrame = existsSync(`${path}dist/iframe.js`);
 					if (metadata.iframe && existsIFrame)
 						resJson.iframeJs = readFileSync(`${path}dist/iframe.js`, "utf-8");
 					else if (metadata.iframe && !existsIFrame) {
@@ -302,13 +303,13 @@ const writeJS = (path: string, code: string): void =>
 				);
 
 				for (const presence of updatedPresenceData) {
-					const [oldPresence] = outdatedPresences.find(
-						([metadata]) => metadata.service === presence.name
-					);
+					
 
 					console.log(
 						yellow(
-							`UPD - "${presence.name}": ${oldPresence.version} => ${presence.metadata.version}`
+							`UPD - "${presence.name}": ${outdatedPresences.find(
+						([metadata]) => metadata.service === presence.name
+					)[0].version} => ${presence.metadata.version}`
 						)
 					);
 				}

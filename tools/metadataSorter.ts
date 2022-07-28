@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import "source-map-support/register";
 
 import { existsSync as exists } from "node:fs";

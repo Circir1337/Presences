@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-/* eslint-disable no-unsafe-finally */
 import "source-map-support/register";
 
 import { green, red } from "chalk";
